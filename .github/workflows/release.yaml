@@ -1,0 +1,22 @@
+name: Release
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+jobs:
+  release:
+    if: github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'force-release:none')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: nrwl/nx-set-shas@v2
+      - run: yarn install --frozen-lockfile
+      - run: git config --global user.email "thomassiclark@gmail.com"
+      - run: git config --global user.name "version bot"
+
+      - run: npx nx affected --target=version --base=main~1 --head=HEAD --parallel=1 --skipCommitTypes=docs,ci,chore,test,refactor,style
+      - run: git push --follow-tags origin main
