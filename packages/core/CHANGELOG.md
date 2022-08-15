@@ -2,6 +2,13 @@
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
 
+### [0.1.1](https://github.com/TClark1011/atomic-storage/compare/core-0.1.0...core-0.1.1) (2022-08-15)
+
+
+### Bug Fixes
+
+* **📦 core:** 🐛 atom no longer overrides existing value on init ([7844c91](https://github.com/TClark1011/atomic-storage/commit/7844c91f22ce1f26be8e98a8012a0084116eefeb))
+
 ## [0.1.0](https://github.com/TClark1011/atomic-storage/compare/core-0.0.1...core-0.1.0) (2022-08-12)
 
 
