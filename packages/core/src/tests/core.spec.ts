@@ -24,6 +24,7 @@ describe('Basic Functionality with localStorage', () => {
     expect(basicAtom).toHaveProperty('set');
     expect(basicAtom).toHaveProperty('update');
     expect(basicAtom).toHaveProperty('key');
+    expect(basicAtom).toHaveProperty('subscribe');
 
     expect(basicAtom.get()).toBe(VALUE);
     expect(basicAtom.key).toBe(KEY);
@@ -91,6 +92,41 @@ describe('Basic Functionality with localStorage', () => {
     // value
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(VALUE));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+  });
+
+  test('Subscriptions', () => {
+    const KEY = getRandomKey();
+    const subscriptionFn = jest.fn();
+
+    const atom = createStorageAtom({
+      key: KEY,
+      storageController: 'localStorage',
+      initialValue: 0,
+    });
+
+    const unsubscribe = atom.subscribe(subscriptionFn);
+
+    expect(atom.get()).toBe(0);
+
+    expect(subscriptionFn).toHaveBeenCalledTimes(0);
+
+    atom.set(1);
+    expect(subscriptionFn).toHaveBeenLastCalledWith(1);
+    expect(atom.get()).toBe(1);
+
+    atom.set(2);
+    expect(subscriptionFn).toHaveBeenLastCalledWith(2);
+    expect(atom.get()).toBe(2);
+
+    expect(subscriptionFn).toHaveBeenCalledTimes(2);
+    unsubscribe();
+
+    atom.set(3);
+
+    // Subscription callback should not be called after unsubscribe
+    expect(subscriptionFn).toHaveBeenCalledTimes(2);
+
+    expect(atom.get()).toBe(3);
   });
 });
 

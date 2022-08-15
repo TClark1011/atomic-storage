@@ -34,11 +34,12 @@ export type MiddlewareInitializer<Value> =
   | MiddlewareCallback<Value>;
 
 export type StorageAtom<Value> = {
-  get: () => Value | null;
+  get: () => Value;
   set: (value: Value) => void;
   key: string;
   update: (updater: Updater<Value>) => void;
   addMiddleware: (middleware: MiddlewareInitializer<Value>) => void;
+  subscribe: (callback: (value: Value) => void) => () => void;
 };
 
 export type StorageAtomOptions<Value> = {

@@ -9,7 +9,8 @@ import {
   StorageAtomOperation,
   StorageAtomOptions,
 } from './types/coreTypes';
-import { SetOptional, Updater } from './types/utilityTypes';
+import { SetOptional } from './types/utilityTypes';
+import { generateId } from './utils';
 
 export type CreateStorageAtomOptions<Value> = SetOptional<
   StorageAtomOptions<Value>,
@@ -27,7 +28,7 @@ const createStorageAtom = <Value>({
   middleware = [],
 }: CreateStorageAtomOptions<Value>): StorageAtom<Value> => {
   const controller = extractStorageController(storageController);
-  const registeredMiddleware = middleware.map(composeMiddlewareRegistration);
+  let registeredMiddleware = middleware.map(composeMiddlewareRegistration);
 
   const runMiddleware = (value: Value, operation: StorageAtomOperation) => {
     const result = registeredMiddleware.reduce(
@@ -38,13 +39,13 @@ const createStorageAtom = <Value>({
     return result;
   };
 
-  const set = (value: Value): void => {
+  const set: StorageAtom<Value>['set'] = (value) => {
     const processed = runMiddleware(value, 'set');
     const stringified = stringify(processed);
     controller.setItem(key, stringified);
   };
 
-  const get = (): Value => {
+  const get: StorageAtom<Value>['get'] = (): Value => {
     const raw = controller.getItem(key);
 
     if (raw === null) {
@@ -61,10 +62,29 @@ const createStorageAtom = <Value>({
   // in storage if it hasn't already been set.
   get();
 
-  const update = (updater: Updater<Value>) => {
+  const update: StorageAtom<Value>['update'] = (updater) => {
     const value = get();
     const updated = updater(value);
     set(updated);
+  };
+
+  const addMiddleware: StorageAtom<Value>['addMiddleware'] = (middleware) => {
+    registeredMiddleware.push(composeMiddlewareRegistration(middleware));
+  };
+
+  const subscribe: StorageAtom<Value>['subscribe'] = (callback) => {
+    const newId = generateId();
+    registeredMiddleware.push({
+      label: newId,
+      callback: async (value) => callback(value),
+      operations: ['set'],
+    });
+    const unsubscribe = () => {
+      registeredMiddleware = registeredMiddleware.filter(
+        (middleware) => middleware.label !== newId
+      );
+    };
+    return unsubscribe;
   };
 
   return {
@@ -72,9 +92,8 @@ const createStorageAtom = <Value>({
     set,
     update,
     key,
-    addMiddleware: (middleware) => {
-      registeredMiddleware.push(composeMiddlewareRegistration(middleware));
-    },
+    addMiddleware,
+    subscribe,
   };
 };
 
