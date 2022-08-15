@@ -7,6 +7,10 @@
     {
       "name": "📦 core",
       "path": "packages/core"
+    },
+    {
+      "name": "📦 react",
+      "path": "packages/react"
     }
   ],
   "settings": {
