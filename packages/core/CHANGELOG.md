@@ -2,6 +2,13 @@
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
 
+## [0.3.0](https://github.com/TClark1011/atomic-storage/compare/core-0.2.0...core-0.3.0) (2022-08-15)
+
+
+### Features
+
+* **📦 core:** 🎸 implemented `subscribe` method ([80e696b](https://github.com/TClark1011/atomic-storage/commit/80e696b02e3f7c9c2e2b0997e32ed8b5197a4e95)), closes [#8](https://github.com/TClark1011/atomic-storage/issues/8)
+
 ## [0.2.0](https://github.com/TClark1011/atomic-storage/compare/core-0.1.1...core-0.2.0) (2022-08-15)
 
 
