@@ -1,1 +1,1 @@
-export * from './lib/react';
+export { default as useStorageAtomState } from './lib/useStorageAtomState';
