@@ -1,6 +1,6 @@
-import createStorageAtom from '../';
+import createStorageAtom, { atomGetMiddleware, atomSetMiddleware } from '../';
 import { StorageController } from '../lib/types/coreTypes';
-import { mockStorage } from './testHelpers';
+import { asyncSleep, identity, mockStorage } from './testHelpers';
 
 const getRandomKey = () => JSON.stringify(Math.random());
 
@@ -203,5 +203,253 @@ describe('Advanced Use Cases', () => {
       c: 0,
     });
     expect(JSON.parse(storage.getItem(KEY) ?? '')).toEqual(basicAtom.get());
+  });
+});
+
+describe('Middleware', () => {
+  test('Simple middleware', () => {
+    const callbackFn = jest.fn(identity);
+
+    const KEY = getRandomKey();
+    const INITIAL_VALUE = 5;
+    const UPDATES = [-23, 876, -151259, 125, 6, 873];
+
+    const atom = createStorageAtom({
+      key: KEY,
+      storageController: 'localStorage',
+      initialValue: INITIAL_VALUE,
+      middleware: [callbackFn],
+    });
+
+    UPDATES.forEach((value, index) => {
+      atom.set(value);
+      expect(callbackFn).toHaveBeenLastCalledWith(value, 'set');
+      atom.get();
+      expect(callbackFn).toHaveBeenLastCalledWith(value, 'get');
+
+      expect(callbackFn).toHaveBeenCalledTimes((index + 1) * 2 + 2);
+    });
+  });
+
+  test('Get-only Middleware', () => {
+    const KEY = getRandomKey();
+    const INITIAL_VALUE = 5;
+    const UPDATES = [-23, 876, -151259, 125, 6, 873];
+    const callbackFn = jest.fn(identity);
+
+    const atom = createStorageAtom({
+      key: KEY,
+      storageController: 'localStorage',
+      initialValue: INITIAL_VALUE,
+      middleware: [
+        {
+          operations: ['get'],
+          callback: callbackFn,
+        },
+      ],
+    });
+
+    UPDATES.forEach((value) => {
+      atom.set(value);
+      atom.get();
+      expect(callbackFn).toHaveBeenLastCalledWith(value, 'get');
+    });
+
+    expect(callbackFn).toHaveBeenCalledTimes(UPDATES.length + 1);
+  });
+
+  test('Set-only Middleware', () => {
+    const KEY = getRandomKey();
+    const INITIAL_VALUE = 5;
+    const UPDATES = [-23, 876, -151259, 125, 6, 873];
+    let syncedValue = INITIAL_VALUE;
+
+    const atom = createStorageAtom({
+      key: KEY,
+      storageController: 'localStorage',
+      initialValue: INITIAL_VALUE,
+      middleware: [
+        {
+          operations: ['set'],
+          callback: (v) => {
+            syncedValue = v;
+            return v;
+          },
+        },
+      ],
+    });
+
+    UPDATES.forEach((value) => {
+      atom.set(value);
+      expect(syncedValue).toEqual(value);
+    });
+  });
+  test('Add new middleware during runtime', () => {
+    const callbackFn = jest.fn(identity);
+
+    const KEY = getRandomKey();
+    const INITIAL_VALUE = 5;
+    const UPDATES = [-23, 876, -151259, 125, 6, 873];
+
+    const atom = createStorageAtom({
+      key: KEY,
+      storageController: 'localStorage',
+      initialValue: INITIAL_VALUE,
+    });
+
+    UPDATES.forEach((value) => {
+      atom.set(value);
+      atom.get();
+      expect(callbackFn).toHaveBeenCalledTimes(0);
+    });
+
+    atom.addMiddleware(callbackFn);
+
+    UPDATES.forEach((value, index) => {
+      atom.set(value);
+      expect(callbackFn).toHaveBeenLastCalledWith(value, 'set');
+      atom.get();
+      expect(callbackFn).toHaveBeenLastCalledWith(value, 'get');
+
+      expect(callbackFn).toHaveBeenCalledTimes((index + 1) * 2);
+    });
+  });
+
+  test('Async middleware', async () => {
+    const KEY = getRandomKey();
+    const INITIAL_VALUE = -1;
+    let syncedValue = INITIAL_VALUE;
+
+    const atom = createStorageAtom({
+      key: KEY,
+      storageController: 'localStorage',
+      initialValue: INITIAL_VALUE,
+      middleware: [
+        {
+          operations: ['set'],
+          callback: async (v) => {
+            syncedValue = v;
+          },
+        },
+      ],
+    });
+
+    atom.set(1);
+    await asyncSleep(50);
+    expect(syncedValue).toEqual(1);
+
+    atom.set(2);
+    await asyncSleep(50);
+    expect(syncedValue).toEqual(2);
+
+    atom.set(3);
+    await asyncSleep(50);
+    expect(syncedValue).toEqual(3);
+
+    atom.set(4);
+    await asyncSleep(50);
+    expect(syncedValue).toEqual(4);
+  });
+
+  test('Multiple plain middleware', () => {
+    const firstMiddleware = jest.fn(identity);
+    const secondMiddleware = jest.fn(identity);
+    const thirdMiddleware = jest.fn(identity);
+
+    const KEY = getRandomKey();
+    const INITIAL_VALUE = 5;
+    const UPDATES = [-23, 876, -151259, 125, 6, 873];
+
+    const atom = createStorageAtom({
+      key: KEY,
+      storageController: 'localStorage',
+      initialValue: INITIAL_VALUE,
+      middleware: [firstMiddleware, secondMiddleware, thirdMiddleware],
+    });
+
+    UPDATES.forEach((value) => {
+      atom.set(value);
+      expect(firstMiddleware).toHaveBeenLastCalledWith(value, 'set');
+      expect(secondMiddleware).toHaveBeenLastCalledWith(value, 'set');
+      expect(thirdMiddleware).toHaveBeenLastCalledWith(value, 'set');
+    });
+  });
+
+  test('Multiple operation-specific middleware (composed with helper functions)', () => {
+    const getterMiddleware = atomGetMiddleware<number>(jest.fn(identity));
+    const setterMiddleware = atomSetMiddleware<number>(jest.fn(identity));
+
+    const KEY = getRandomKey();
+    const INITIAL_VALUE = 5;
+    const UPDATES = [-23, 876, -151259, 125, 6, 873];
+
+    const atom = createStorageAtom({
+      key: KEY,
+      storageController: 'localStorage',
+      initialValue: INITIAL_VALUE,
+      middleware: [getterMiddleware, setterMiddleware],
+    });
+
+    UPDATES.forEach((value) => {
+      atom.set(value);
+      expect(setterMiddleware.callback).toHaveBeenLastCalledWith(value, 'set');
+      expect(getterMiddleware.callback).not.toHaveBeenLastCalledWith(
+        value,
+        'set'
+      );
+      atom.get();
+      expect(getterMiddleware.callback).toHaveBeenLastCalledWith(value, 'get');
+      expect(setterMiddleware.callback).not.toHaveBeenLastCalledWith(
+        value,
+        'get'
+      );
+    });
+  });
+
+  test('Validation middleware', () => {
+    const MIDDLEWARE_ERROR_MESSAGE = 'Value must be positive';
+    const parsePositiveNumber = (n: number) => {
+      if (n < 0) {
+        throw new Error(MIDDLEWARE_ERROR_MESSAGE);
+      }
+      return n;
+    };
+    const KEY = getRandomKey();
+    const INITIAL_VALUE = 0;
+
+    const atom = createStorageAtom({
+      key: KEY,
+      storageController: 'localStorage',
+      initialValue: INITIAL_VALUE,
+      middleware: [atomSetMiddleware(parsePositiveNumber)],
+    });
+
+    atom.set(1);
+    expect(atom.get()).toEqual(1);
+
+    expect(() => atom.set(-1)).toThrowError(MIDDLEWARE_ERROR_MESSAGE);
+  });
+
+  test('Middleware that affects value', () => {
+    const increment = (n: number) => n + 1;
+    const incrementOnSet = atomSetMiddleware(increment);
+
+    const KEY = getRandomKey();
+    const INITIAL_VALUE = 0;
+    const UPDATES = [-23, 876, -151259, 125, 6, 873];
+
+    const atom = createStorageAtom({
+      key: KEY,
+      storageController: 'localStorage',
+      initialValue: INITIAL_VALUE,
+      middleware: [incrementOnSet],
+    });
+
+    expect(atom.get()).toEqual(increment(INITIAL_VALUE));
+
+    UPDATES.forEach((value) => {
+      atom.set(value);
+      expect(atom.get()).toEqual(increment(value));
+    });
   });
 });

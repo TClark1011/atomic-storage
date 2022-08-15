@@ -23,3 +23,8 @@ export const mockStorage = () => {
 };
 
 /* #endregion */
+
+export const asyncSleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+export const identity = <T>(p: T) => p;

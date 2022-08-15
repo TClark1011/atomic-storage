@@ -1,13 +1,19 @@
 import {
+  composeMiddlewareRegistration,
+  executeMiddleware,
   extractStorageController,
   getDefaultSerializationController,
-} from './helpers';
-import { StorageAtom, StorageAtomOptions } from './types/coreTypes';
+} from './internalHelpers';
+import {
+  StorageAtom,
+  StorageAtomOperation,
+  StorageAtomOptions,
+} from './types/coreTypes';
 import { SetOptional, Updater } from './types/utilityTypes';
 
 export type CreateStorageAtomOptions<Value> = SetOptional<
   StorageAtomOptions<Value>,
-  'serializationController'
+  'serializationController' | 'middleware'
 >;
 
 const createStorageAtom = <Value>({
@@ -18,11 +24,23 @@ const createStorageAtom = <Value>({
     parse,
     stringify,
   } = getDefaultSerializationController<Value>(),
+  middleware = [],
 }: CreateStorageAtomOptions<Value>): StorageAtom<Value> => {
   const controller = extractStorageController(storageController);
+  const registeredMiddleware = middleware.map(composeMiddlewareRegistration);
+
+  const runMiddleware = (value: Value, operation: StorageAtomOperation) => {
+    const result = registeredMiddleware.reduce(
+      (result, currentMiddleware) =>
+        executeMiddleware(result, operation, currentMiddleware),
+      value
+    );
+    return result;
+  };
 
   const set = (value: Value): void => {
-    const stringified = stringify(value);
+    const processed = runMiddleware(value, 'set');
+    const stringified = stringify(processed);
     controller.setItem(key, stringified);
   };
 
@@ -30,11 +48,13 @@ const createStorageAtom = <Value>({
     const raw = controller.getItem(key);
 
     if (raw === null) {
-      set(initialValue);
+      set(runMiddleware(initialValue, 'get'));
       return initialValue;
     }
 
-    return parse(raw);
+    const parsed = parse(raw);
+    const processed = runMiddleware(parsed, 'get');
+    return processed;
   };
 
   // We run `get` once at initialization to initialise the value
@@ -52,6 +72,9 @@ const createStorageAtom = <Value>({
     set,
     update,
     key,
+    addMiddleware: (middleware) => {
+      registeredMiddleware.push(composeMiddlewareRegistration(middleware));
+    },
   };
 };
 
