@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@atomic-storage/core": ["packages/core/src/index.ts"]
+      "@atomic-storage/core": ["packages/core/src/index.ts"],
+      "@atomic-storage/react": ["packages/react/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
