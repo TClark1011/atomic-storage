@@ -1,1 +1,1 @@
-export * from './lib/models';
+export { default } from './lib/createStorageAtom';
