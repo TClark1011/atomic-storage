@@ -2,6 +2,13 @@
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
 
+## [0.2.0](https://github.com/TClark1011/atomic-storage/compare/core-0.1.1...core-0.2.0) (2022-08-15)
+
+
+### Features
+
+* **📦 core:** 🎸 implemented middleware ([ae1687a](https://github.com/TClark1011/atomic-storage/commit/ae1687a2f337691ed7c2c0f25625385027af4a5c)), closes [#5](https://github.com/TClark1011/atomic-storage/issues/5)
+
 ### [0.1.1](https://github.com/TClark1011/atomic-storage/compare/core-0.1.0...core-0.1.1) (2022-08-15)
 
 
