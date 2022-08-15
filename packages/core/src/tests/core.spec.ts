@@ -1,22 +1,12 @@
-import { createStorageAtom } from './models';
+import createStorageAtom from '../';
+import { StorageController } from '../lib/types/coreTypes';
+import { mockStorage } from './testHelpers';
 
 const getRandomKey = () => JSON.stringify(Math.random());
 
-// Mock local storage
-const values = new Map();
-const mockedStorage = {
-  getItem: (p: string) => values.get(p),
-  setItem: (p: string, v: unknown) => values.set(p, v),
-};
-Object.defineProperty(window, 'localStorage', {
-  value: mockedStorage,
-});
-Object.defineProperty(window, 'sessionStorage', {
-  value: mockedStorage,
-});
-
-beforeEach(() => {
-  values.clear();
+const { reset, storage } = mockStorage();
+afterEach(() => {
+  reset();
 });
 
 describe('Basic Functionality with localStorage', () => {
@@ -50,16 +40,16 @@ describe('Basic Functionality with localStorage', () => {
       initialValue: VALUE,
     });
 
-    expect(values.get(KEY)).toEqual(JSON.stringify(VALUE));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(VALUE));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
     basicAtom.set(NEW_VALUE);
-    expect(values.get(KEY)).toEqual(JSON.stringify(NEW_VALUE));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
     basicAtom.update((v) => v + 1);
-    expect(values.get(KEY)).toEqual(JSON.stringify(NEW_VALUE + 1));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE + 1));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
   });
 
   it('Can set strings', () => {
@@ -73,16 +63,34 @@ describe('Basic Functionality with localStorage', () => {
       initialValue: VALUE,
     });
 
-    expect(values.get(KEY)).toEqual(JSON.stringify(VALUE));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(VALUE));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
     basicAtom.set(NEW_VALUE);
-    expect(values.get(KEY)).toEqual(JSON.stringify(NEW_VALUE));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
     basicAtom.update((v) => v.concat('+'));
-    expect(values.get(KEY)).toEqual(JSON.stringify(NEW_VALUE.concat('+')));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE.concat('+')));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+  });
+
+  it('Does not override existing values on creation', () => {
+    const KEY = getRandomKey();
+    const VALUE = 100;
+    const ATOM_VALUE = 0;
+
+    storage.setItem(KEY, JSON.stringify(VALUE));
+    const basicAtom = createStorageAtom({
+      key: KEY,
+      storageController: 'localStorage',
+      initialValue: ATOM_VALUE,
+    });
+
+    // Since value already existed, atom should not hold its initial
+    // value
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(VALUE));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
   });
 });
 
@@ -98,16 +106,16 @@ describe('Advanced Use Cases', () => {
       initialValue: VALUE,
     });
 
-    expect(values.get(KEY)).toEqual(JSON.stringify(VALUE));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(VALUE));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
     basicAtom.set(NEW_VALUE);
-    expect(values.get(KEY)).toEqual(JSON.stringify(NEW_VALUE));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
     basicAtom.update((v) => v + 1);
-    expect(values.get(KEY)).toEqual(JSON.stringify(NEW_VALUE + 1));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE + 1));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
   });
 
   test('Custom Serializer', () => {
@@ -127,16 +135,16 @@ describe('Advanced Use Cases', () => {
       serializationController: customController,
     });
 
-    expect(values.get(KEY)).toEqual(JSON.stringify(VALUE));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(VALUE));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
     basicAtom.set(NEW_VALUE);
-    expect(values.get(KEY)).toEqual(JSON.stringify(NEW_VALUE));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
     basicAtom.update((v) => v + 1);
-    expect(values.get(KEY)).toEqual(JSON.stringify(NEW_VALUE + 1));
-    expect(values.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE + 1));
+    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
   });
 
   test('Custom Storage', () => {
@@ -144,10 +152,10 @@ describe('Advanced Use Cases', () => {
     const VALUE = 18412897412487;
     const NEW_VALUE = 987654;
 
-    const bucket = new Map();
-    const customStorage = {
-      getItem: (p: string) => bucket.get(p),
-      setItem: (p: string, v: unknown) => bucket.set(p, v),
+    const bucket = new Map<string, string>();
+    const customStorage: StorageController = {
+      getItem: (p: string) => bucket.get(p) ?? null,
+      setItem: (p: string, v: string) => bucket.set(p, v),
     };
 
     const basicAtom = createStorageAtom({
@@ -181,15 +189,19 @@ describe('Advanced Use Cases', () => {
       initialValue: VALUE,
     });
 
-    expect(JSON.parse(values.get(KEY))).toEqual(VALUE);
-    expect(JSON.parse(values.get(KEY))).toEqual(basicAtom.get());
+    expect(JSON.parse(storage.getItem(KEY) ?? '')).toEqual(VALUE);
+    expect(JSON.parse(storage.getItem(KEY) ?? '')).toEqual(basicAtom.get());
 
     basicAtom.set(NEW_VALUE);
-    expect(JSON.parse(values.get(KEY))).toEqual(NEW_VALUE);
-    expect(JSON.parse(values.get(KEY))).toEqual(basicAtom.get());
+    expect(JSON.parse(storage.getItem(KEY) ?? '')).toEqual(NEW_VALUE);
+    expect(JSON.parse(storage.getItem(KEY) ?? '')).toEqual(basicAtom.get());
 
     basicAtom.update((v) => ({ ...v, b: (v?.b ?? 0) + 1, c: 0 }));
-    expect(JSON.parse(values.get(KEY))).toStrictEqual({ a: 2, b: 1, c: 0 });
-    expect(JSON.parse(values.get(KEY))).toEqual(basicAtom.get());
+    expect(JSON.parse(storage.getItem(KEY) ?? '')).toStrictEqual({
+      a: 2,
+      b: 1,
+      c: 0,
+    });
+    expect(JSON.parse(storage.getItem(KEY) ?? '')).toEqual(basicAtom.get());
   });
 });
