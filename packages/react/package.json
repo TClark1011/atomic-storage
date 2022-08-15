@@ -1,6 +1,6 @@
 {
   "name": "@atomic-storage/react",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "peerDependencies": {
     "react": ">=16",
     "@atomic-storage/core": "^0.3.0"
