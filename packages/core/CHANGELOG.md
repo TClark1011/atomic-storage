@@ -2,6 +2,13 @@
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
 
+### [0.3.2](https://github.com/TClark1011/atomic-storage/compare/core-0.3.1...core-0.3.2) (2022-08-16)
+
+
+### Bug Fixes
+
+* **📦 core:** 🐛 removed `tslib` peer dependency ([e889337](https://github.com/TClark1011/atomic-storage/commit/e88933737caa84df06e79db856c07b84023c05a0))
+
 ### [0.3.1](https://github.com/TClark1011/atomic-storage/compare/core-0.3.0...core-0.3.1) (2022-08-15)
 
 ## [0.3.0](https://github.com/TClark1011/atomic-storage/compare/core-0.2.0...core-0.3.0) (2022-08-15)
