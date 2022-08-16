@@ -2,6 +2,13 @@
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
 
+### [0.3.3](https://github.com/TClark1011/atomic-storage/compare/core-0.3.2...core-0.3.3) (2022-08-16)
+
+
+### Bug Fixes
+
+* **📦 core:** 🐛 merged `update` method functionality into `set` ([500b377](https://github.com/TClark1011/atomic-storage/commit/500b377d020b83eba2de798c3632dcb61fcb6b71)), closes [#14](https://github.com/TClark1011/atomic-storage/issues/14)
+
 ### [0.3.2](https://github.com/TClark1011/atomic-storage/compare/core-0.3.1...core-0.3.2) (2022-08-16)
 
 
