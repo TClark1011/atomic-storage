@@ -1,4 +1,4 @@
-import { SetOptional, Updater } from './utilityTypes';
+import { SetOptional, Update } from './utilityTypes';
 
 export type SerializationController<Value> = {
   stringify: (value: Value) => string;
@@ -35,9 +35,8 @@ export type MiddlewareInitializer<Value> =
 
 export type StorageAtom<Value> = {
   get: () => Value;
-  set: (value: Value) => void;
+  set: (value: Update<Value>) => Value;
   key: string;
-  update: (updater: Updater<Value>) => void;
   addMiddleware: (middleware: MiddlewareInitializer<Value>) => void;
   subscribe: (callback: (value: Value) => void) => () => void;
 };

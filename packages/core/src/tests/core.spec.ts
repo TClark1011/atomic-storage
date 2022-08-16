@@ -22,7 +22,6 @@ describe('Basic Functionality with localStorage', () => {
 
     expect(basicAtom).toHaveProperty('get');
     expect(basicAtom).toHaveProperty('set');
-    expect(basicAtom).toHaveProperty('update');
     expect(basicAtom).toHaveProperty('key');
     expect(basicAtom).toHaveProperty('subscribe');
 
@@ -44,11 +43,13 @@ describe('Basic Functionality with localStorage', () => {
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(VALUE));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
-    basicAtom.set(NEW_VALUE);
+    const setResult = basicAtom.set(NEW_VALUE);
+    expect(setResult).toBe(NEW_VALUE);
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
-    basicAtom.update((v) => v + 1);
+    const secondSetResult = basicAtom.set((v) => v + 1);
+    expect(secondSetResult).toBe(NEW_VALUE + 1);
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE + 1));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
   });
@@ -71,7 +72,7 @@ describe('Basic Functionality with localStorage', () => {
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
-    basicAtom.update((v) => v.concat('+'));
+    basicAtom.set((v) => v.concat('+'));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE.concat('+')));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
   });
@@ -106,7 +107,7 @@ describe('Basic Functionality with localStorage', () => {
 
     expect(atom.get()).toBe(VALUE);
 
-    atom.update((v) => v + 1);
+    atom.set((v) => v + 1);
     expect(atom.get()).toBe(VALUE + 1);
   });
 
@@ -165,7 +166,7 @@ describe('Advanced Use Cases', () => {
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
-    basicAtom.update((v) => v + 1);
+    basicAtom.set((v) => v + 1);
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE + 1));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
   });
@@ -194,7 +195,7 @@ describe('Advanced Use Cases', () => {
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
-    basicAtom.update((v) => v + 1);
+    basicAtom.set((v) => v + 1);
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE + 1));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
   });
@@ -223,7 +224,7 @@ describe('Advanced Use Cases', () => {
     expect(bucket.get(KEY)).toEqual(JSON.stringify(NEW_VALUE));
     expect(bucket.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
-    basicAtom.update((v) => v + 1);
+    basicAtom.set((v) => v + 1);
     expect(bucket.get(KEY)).toEqual(JSON.stringify(NEW_VALUE + 1));
     expect(bucket.get(KEY)).toEqual(JSON.stringify(basicAtom.get()));
   });
@@ -248,7 +249,7 @@ describe('Advanced Use Cases', () => {
     expect(JSON.parse(storage.getItem(KEY) ?? '')).toEqual(NEW_VALUE);
     expect(JSON.parse(storage.getItem(KEY) ?? '')).toEqual(basicAtom.get());
 
-    basicAtom.update((v) => ({ ...v, b: (v?.b ?? 0) + 1, c: 0 }));
+    basicAtom.set((v) => ({ ...v, b: (v?.b ?? 0) + 1, c: 0 }));
     expect(JSON.parse(storage.getItem(KEY) ?? '')).toStrictEqual({
       a: 2,
       b: 1,
