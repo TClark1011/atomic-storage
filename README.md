@@ -1,94 +1,91 @@
+![Atomic Storage](assets/header-dark.png#gh-dark-mode-only)
+![Atomic Storage](assets/header-light.png#gh-light-mode-only)
 
+The easiest way to persist data in web apps. Skip the hassle of repeating keys over and over, checking if the data is null, and parsing it and dealing with typings. All with a minimalist API.
 
-# AtomicStorage
+## Install
 
-This project was generated using [Nx](https://nx.dev).
+yarn
 
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="450"></p>
+```zsh
+yarn add @atomic-storage/core
+```
 
-🔎 **Smart, Fast and Extensible Build System**
+npm
 
-## Adding capabilities to your workspace
+```zsh
+npm install @atomic-storage/core
+```
 
-Nx supports many plugins which add capabilities for developing different types of applications and different tools.
+pnpm
 
-These capabilities include generating applications, libraries, etc as well as the devtools to test, and build projects as well.
+```zsh
+pnpm add @atomic-storage/core
+```
 
-Below are our core plugins:
+## Usage
 
-- [React](https://reactjs.org)
-  - `npm install --save-dev @nrwl/react`
-- Web (no framework frontends)
-  - `npm install --save-dev @nrwl/web`
-- [Angular](https://angular.io)
-  - `npm install --save-dev @nrwl/angular`
-- [Nest](https://nestjs.com)
-  - `npm install --save-dev @nrwl/nest`
-- [Express](https://expressjs.com)
-  - `npm install --save-dev @nrwl/express`
-- [Node](https://nodejs.org)
-  - `npm install --save-dev @nrwl/node`
+```typescript
+import createStorageAtom from '@atomic-storage/core';
 
-There are also many [community plugins](https://nx.dev/community) you could add.
+const counterAtom = createStorageAtom({
+  key: 'counter',
+  initialValue: 0,
+  storageController: 'localStorage', //can also use 'sessionStorage'
+});
 
-## Generate an application
+counterAtom.get(); // 0
+counterAtom.set(10);
+counterAtom.set((v) => v + 1);
+```
 
-Run `nx g @nrwl/react:app my-app` to generate an application.
+### Strong Typing
 
-> You can use any of the plugins above to generate applications as well.
+By default the typing of storage atoms is naive, atoms simply trust that any data it parses retrieves and parses from storage will be of the correct type.
 
-When using Nx, you can create multiple applications and libraries in the same workspace.
+If you want a stronger type system, you can use the `middleware` feature to do so.
 
-## Generate a library
+```typescript
+const parseString = (value: unknown): string => {
+  if (typeof value !== 'string') {
+    throw new Error('must be a string');
+  }
+  return value;
+};
 
-Run `nx g @nrwl/react:lib my-lib` to generate a library.
+const stringAtom = createStorageAtom({
+  key: 'string-value',
+  initialValue: '',
+  storageController: 'localStorage',
+  middleware: [parseString],
+});
+// All values passed to `set` and returned from `get` will parsed through `parseString` and will throw an error if the data is not a string
+```
 
-> You can also use any of the plugins above to generate libraries as well.
+### Subscribe
 
-Libraries are shareable across libraries and applications. They can be imported from `@atomic-storage/mylib`.
+You can subscribe to an atom to make sure you are always displaying the newest value;
 
-## Development server
+```typescript
+const accountBalanceAtom = createStorageAtom({
+  key: 'balance',
+  initialValue: 0,
+  storageController: 'localStorage',
+});
 
-Run `nx serve my-app` for a dev server. Navigate to http://localhost:4200/. The app will automatically reload if you change any of the source files.
+const accountBalanceElement = document.getElementById(
+  'account-balance-display'
+);
 
-## Code scaffolding
+if (accountBalanceElement?.innerHTML) {
+  accountBalanceElement.innerHTML = accountBalanceAtom.get();
+}
 
-Run `nx g @nrwl/react:component my-component --project=my-app` to generate a new component.
+accountBalanceAtom.subscribe((newBalance) => {
+  if (accountBalanceElement?.innerHTML) {
+    accountBalanceElement.innerHTML = newBalance;
+  }
+});
+```
 
-## Build
-
-Run `nx build my-app` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `nx test my-app` to execute the unit tests via [Jest](https://jestjs.io).
-
-Run `nx affected:test` to execute the unit tests affected by a change.
-
-## Running end-to-end tests
-
-Run `nx e2e my-app` to execute the end-to-end tests via [Cypress](https://www.cypress.io).
-
-Run `nx affected:e2e` to execute the end-to-end tests affected by a change.
-
-## Understand your workspace
-
-Run `nx graph` to see a diagram of the dependencies of your projects.
-
-## Further help
-
-Visit the [Nx Documentation](https://nx.dev) to learn more.
-
-
-
-## ☁ Nx Cloud
-
-### Distributed Computation Caching & Distributed Task Execution
-
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-cloud-card.png"></p>
-
-Nx Cloud pairs with Nx in order to enable you to build and test code more rapidly, by up to 10 times. Even teams that are new to Nx can connect to Nx Cloud and start saving time instantly.
-
-Teams using Nx gain the advantage of building full-stack applications with their preferred framework alongside Nx’s advanced code generation and project dependency graph, plus a unified experience for both frontend and backend developers.
-
-Visit [Nx Cloud](https://nx.app/) to learn more.
+**NOTE:** Subscribing to an atom only subscribes you to updates made _by that atom_. If the value stored at the atom's key is updated either directly or by another atom that targets the same key, those updates will not be broadcast.
