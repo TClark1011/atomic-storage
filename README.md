@@ -89,3 +89,7 @@ accountBalanceAtom.subscribe((newBalance) => {
 ```
 
 **NOTE:** Subscribing to an atom only subscribes you to updates made _by that atom_. If the value stored at the atom's key is updated either directly or by another atom that targets the same key, those updates will not be broadcast.
+
+---
+
+Logo was sourced from [Vecteezy](https://www.vecteezy.com/vector-art/351270-vector-atom-icon)
