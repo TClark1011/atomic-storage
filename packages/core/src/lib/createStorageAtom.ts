@@ -9,7 +9,7 @@ import {
   StorageAtomOperation,
   StorageAtomOptions,
 } from './types/coreTypes';
-import { SetOptional } from './types/utilityTypes';
+import { SetOptional, UpdateDeriver } from './types/utilityTypes';
 import { generateId } from './utils';
 
 export type CreateStorageAtomOptions<Value> = SetOptional<
@@ -39,10 +39,15 @@ const createStorageAtom = <Value>({
     return result;
   };
 
-  const set: StorageAtom<Value>['set'] = (value) => {
+  const set: StorageAtom<Value>['set'] = (update) => {
+    const value =
+      typeof update !== 'function'
+        ? update
+        : (update as UpdateDeriver<Value>)(get() ?? initialValue);
     const processed = runMiddleware(value, 'set');
     const stringified = stringify(processed);
     controller.setItem(key, stringified);
+    return processed;
   };
 
   const get: StorageAtom<Value>['get'] = (): Value => {
@@ -61,12 +66,6 @@ const createStorageAtom = <Value>({
   // We run `get` once at initialization to initialise the value
   // in storage if it hasn't already been set.
   get();
-
-  const update: StorageAtom<Value>['update'] = (updater) => {
-    const value = get();
-    const updated = updater(value);
-    set(updated);
-  };
 
   const addMiddleware: StorageAtom<Value>['addMiddleware'] = (middleware) => {
     registeredMiddleware.push(composeMiddlewareRegistration(middleware));
@@ -90,7 +89,6 @@ const createStorageAtom = <Value>({
   return {
     get,
     set,
-    update,
     key,
     addMiddleware,
     subscribe,
