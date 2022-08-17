@@ -2,6 +2,13 @@
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
 
+## [0.3.0](https://github.com/TClark1011/atomic-storage/compare/react-0.2.1...react-0.3.0) (2022-08-17)
+
+
+### Features
+
+* **📦 react:** 🎸 `useStorageAtomWithSelector` hook ([e0524aa](https://github.com/TClark1011/atomic-storage/commit/e0524aad1d891432ed074bfad58a52f33602973e)), closes [#23](https://github.com/TClark1011/atomic-storage/issues/23)
+
 ### [0.2.1](https://github.com/TClark1011/atomic-storage/compare/react-0.2.0...react-0.2.1) (2022-08-17)
 
 ## [0.2.0](https://github.com/TClark1011/atomic-storage/compare/react-0.1.0...react-0.2.0) (2022-08-17)
