@@ -48,3 +48,8 @@ export type StorageAtomOptions<Value> = {
   key: string;
   middleware: MiddlewareInitializer<Value>[];
 };
+
+export type SubscriptionRegistration<Value> = {
+  id: string;
+  callback: (value: Value) => void;
+};

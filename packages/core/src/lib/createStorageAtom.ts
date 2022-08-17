@@ -8,6 +8,7 @@ import {
   StorageAtom,
   StorageAtomOperation,
   StorageAtomOptions,
+  SubscriptionRegistration,
 } from './types/coreTypes';
 import { SetOptional, UpdateDeriver } from './types/utilityTypes';
 import { generateId } from './utils';
@@ -28,7 +29,9 @@ const createStorageAtom = <Value>({
   middleware = [],
 }: CreateStorageAtomOptions<Value>): StorageAtom<Value> => {
   const controller = extractStorageController(storageController);
-  let registeredMiddleware = middleware.map(composeMiddlewareRegistration);
+  const registeredMiddleware = middleware.map(composeMiddlewareRegistration);
+
+  let subscriptions: SubscriptionRegistration<Value>[];
 
   const runMiddleware = (value: Value, operation: StorageAtomOperation) => {
     const result = registeredMiddleware.reduce(
@@ -39,6 +42,12 @@ const createStorageAtom = <Value>({
     return result;
   };
 
+  const emit = (value: Value) => {
+    subscriptions.forEach(({ callback }) => {
+      callback(value);
+    });
+  };
+
   const set: StorageAtom<Value>['set'] = (update) => {
     const value =
       typeof update !== 'function'
@@ -47,6 +56,8 @@ const createStorageAtom = <Value>({
     const processed = runMiddleware(value, 'set');
     const stringified = stringify(processed);
     controller.setItem(key, stringified);
+
+    emit(value);
     return processed;
   };
 
@@ -73,15 +84,12 @@ const createStorageAtom = <Value>({
 
   const subscribe: StorageAtom<Value>['subscribe'] = (callback) => {
     const newId = generateId();
-    registeredMiddleware.push({
-      label: newId,
-      callback: async (value) => callback(value),
-      operations: ['set'],
+    subscriptions.push({
+      id: newId,
+      callback,
     });
     const unsubscribe = () => {
-      registeredMiddleware = registeredMiddleware.filter(
-        (middleware) => middleware.label !== newId
-      );
+      subscriptions = subscriptions.filter((sub) => sub.id !== newId);
     };
     return unsubscribe;
   };
