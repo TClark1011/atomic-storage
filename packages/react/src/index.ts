@@ -1,1 +1,1 @@
-export { default as useStorageAtomState } from './lib/useStorageAtomState';
+export { default as useStorageAtom } from './lib/useStorageAtom';
