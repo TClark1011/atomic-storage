@@ -2,6 +2,14 @@
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
 
+### [0.3.4](https://github.com/TClark1011/atomic-storage/compare/core-0.3.3...core-0.3.4) (2022-08-17)
+
+
+### Bug Fixes
+
+* **📦 core:** 🐛 subscriptions are initialized as empty array ([b2b1898](https://github.com/TClark1011/atomic-storage/commit/b2b18984dfa62430d72180f9a50ed37863c4f25b))
+* **📦 core:** 🐛 subscriptions are now synchronous ([3b770f8](https://github.com/TClark1011/atomic-storage/commit/3b770f8e0ae1dd5854d569035c20e20d3cc4758e))
+
 ### [0.3.3](https://github.com/TClark1011/atomic-storage/compare/core-0.3.2...core-0.3.3) (2022-08-16)
 
 
