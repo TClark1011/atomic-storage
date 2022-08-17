@@ -31,7 +31,7 @@ const createStorageAtom = <Value>({
   const controller = extractStorageController(storageController);
   const registeredMiddleware = middleware.map(composeMiddlewareRegistration);
 
-  let subscriptions: SubscriptionRegistration<Value>[];
+  let subscriptions: SubscriptionRegistration<Value>[] = [];
 
   const runMiddleware = (value: Value, operation: StorageAtomOperation) => {
     const result = registeredMiddleware.reduce(
