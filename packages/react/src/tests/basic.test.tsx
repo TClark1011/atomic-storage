@@ -1,6 +1,6 @@
 import createStorageAtom from '@atomic-storage/core';
 import { act, render, renderHook } from '@testing-library/react';
-import { useStorageAtom } from '..';
+import { useStorageAtom, useStorageAtomWithSelector } from '..';
 
 afterEach(() => {
   window.localStorage.clear();
@@ -98,5 +98,75 @@ describe('useStorageAtom', () => {
     });
     await findByText(`value: ${UPDATE + 1}`);
     await findByText('renderCount: 3');
+  });
+});
+
+describe('useStorageAtomWithSelector', () => {
+  it('Returns selection', () => {
+    const value = {
+      a: 'a',
+      b: 'b',
+    };
+
+    const atom = createStorageAtom({
+      initialValue: value,
+      key: `${Math.random()}`,
+      storageController: 'localStorage',
+    });
+
+    const { result } = renderHook(() =>
+      useStorageAtomWithSelector(atom, (v) => v.a)
+    );
+
+    expect(atom.get()).toEqual(value);
+    expect(result.current).toBe(value.a);
+  });
+
+  it('Only re-renders if selection changes', async () => {
+    const value = {
+      a: 'a',
+      b: 'b',
+    };
+
+    const atom = createStorageAtom({
+      initialValue: value,
+      key: `${Math.random()}`,
+      storageController: 'localStorage',
+    });
+
+    let renderCount = 0;
+    const Component = () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const a = useStorageAtomWithSelector(atom, (v) => v.a);
+      return <div>renderCount: {++renderCount}</div>;
+    };
+
+    const { findByText } = render(<Component />);
+
+    await findByText('renderCount: 1');
+
+    // Update that does not change the selection (the `a` key)
+    // should NOT cause a re-render
+    const noRerenderUpdate = {
+      ...value,
+      b: 'changed',
+    };
+    act(() => {
+      atom.set(noRerenderUpdate);
+    });
+
+    expect(atom.get()).toEqual(noRerenderUpdate);
+    await findByText('renderCount: 1');
+
+    // Update that changes `a` field SHOULD cause a re-render
+    const rerenderUpdate = {
+      ...value,
+      a: 'also changed',
+    };
+    act(() => {
+      atom.set(rerenderUpdate);
+    });
+    expect(atom.get()).toEqual(rerenderUpdate);
+    await findByText('renderCount: 2');
   });
 });
