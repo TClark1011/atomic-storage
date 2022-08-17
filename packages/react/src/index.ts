@@ -1,1 +1,1 @@
-export { default as useStorageAtom } from './lib/useStorageAtom';
+export * from './lib/hooks';
