@@ -2,6 +2,13 @@
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
 
+## [0.4.0](https://github.com/TClark1011/atomic-storage/compare/react-0.3.0...react-0.4.0) (2022-08-18)
+
+
+### Features
+
+* **📦 react:** 🎸 hook creator functions ([84cf6e0](https://github.com/TClark1011/atomic-storage/commit/84cf6e0b7711dbb084f55aabe2cc7bab6ff6fd58)), closes [#24](https://github.com/TClark1011/atomic-storage/issues/24)
+
 ## [0.3.0](https://github.com/TClark1011/atomic-storage/compare/react-0.2.1...react-0.3.0) (2022-08-17)
 
 
