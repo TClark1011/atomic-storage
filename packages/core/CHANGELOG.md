@@ -2,6 +2,13 @@
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
 
+## [0.4.0](https://github.com/TClark1011/atomic-storage/compare/core-0.3.4...core-0.4.0) (2022-08-22)
+
+
+### Features
+
+* **📦 core:** 🎸 `reset` method ([d7ce7f5](https://github.com/TClark1011/atomic-storage/commit/d7ce7f59158243959ed6c187734b50e617a862e4)), closes [#26](https://github.com/TClark1011/atomic-storage/issues/26)
+
 ### [0.3.4](https://github.com/TClark1011/atomic-storage/compare/core-0.3.3...core-0.3.4) (2022-08-17)
 
 
