@@ -2,6 +2,8 @@
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
 
+### [0.4.1](https://github.com/TClark1011/atomic-storage/compare/react-0.4.0...react-0.4.1) (2022-08-22)
+
 ## [0.4.0](https://github.com/TClark1011/atomic-storage/compare/react-0.3.0...react-0.4.0) (2022-08-18)
 
 
