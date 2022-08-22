@@ -39,6 +39,7 @@ export type StorageAtom<Value> = {
   key: string;
   addMiddleware: (middleware: MiddlewareInitializer<Value>) => void;
   subscribe: (callback: (value: Value) => void) => () => void;
+  reset: () => Value;
 };
 
 export type StorageAtomOptions<Value> = {
