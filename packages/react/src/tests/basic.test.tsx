@@ -27,6 +27,11 @@ describe('useStorageAtom', () => {
     });
     expect(atom.get()).toBe(UPDATE_VIA_ATOM);
     expect(result.current).toBe(UPDATE_VIA_ATOM);
+
+    act(() => {
+      atom.reset();
+    });
+    expect(result.current).toBe(INITIAL_VALUE);
   });
 
   test('Multiple consumers', () => {
@@ -60,6 +65,12 @@ describe('useStorageAtom', () => {
     });
     expect(firstInstanceResult.current).toBe(UPDATE + ADJUSTMENT);
     expect(secondInstanceResult.current).toBe(UPDATE + ADJUSTMENT);
+
+    act(() => {
+      atom.reset();
+    });
+    expect(firstInstanceResult.current).toBe(INITIAL_VALUE);
+    expect(secondInstanceResult.current).toBe(INITIAL_VALUE);
   });
 
   test('Render Performance', async () => {
@@ -168,5 +179,15 @@ describe('useStorageAtomWithSelector', () => {
     });
     expect(atom.get()).toEqual(rerenderUpdate);
     await findByText('renderCount: 2');
+
+    act(() => {
+      atom.reset();
+    });
+    await findByText('renderCount: 3');
+
+    act(() => {
+      atom.reset();
+    });
+    await findByText('renderCount: 3');
   });
 });
