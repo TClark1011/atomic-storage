@@ -40,18 +40,20 @@ describe('Basic Functionality with localStorage', () => {
       initialValue: VALUE,
     });
 
+    expect(basicAtom.get()).toEqual(VALUE);
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(VALUE));
     expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
 
     const setResult = basicAtom.set(NEW_VALUE);
     expect(setResult).toBe(NEW_VALUE);
-    expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE));
-    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(basicAtom.get()).toBe(NEW_VALUE);
+    expect(storage.getItem(KEY)).toBe(JSON.stringify(NEW_VALUE));
 
     const secondSetResult = basicAtom.set((v) => v + 1);
     expect(secondSetResult).toBe(NEW_VALUE + 1);
-    expect(storage.getItem(KEY)).toEqual(JSON.stringify(NEW_VALUE + 1));
-    expect(storage.getItem(KEY)).toEqual(JSON.stringify(basicAtom.get()));
+    expect(basicAtom.get()).toBe(NEW_VALUE + 1);
+    expect(storage.getItem(KEY)).toBe(JSON.stringify(NEW_VALUE + 1));
+    expect(storage.getItem(KEY)).toBe(JSON.stringify(basicAtom.get()));
   });
 
   it('Can set strings', () => {
@@ -110,6 +112,23 @@ describe('Basic Functionality with localStorage', () => {
     atom.set((v) => v + 1);
     expect(atom.get()).toBe(VALUE + 1);
   });
+
+  it('Can reset', () => {
+    const VALUE = 5;
+    const KEY = getRandomKey();
+    const atom = createStorageAtom({
+      initialValue: VALUE,
+      storageController: 'localStorage',
+      key: KEY,
+    })
+
+    atom.set(-1);
+
+    const resetResult = atom.reset();
+    expect(resetResult).toBe(VALUE);
+    expect(atom.get()).toBe(VALUE);
+    expect(storage.getItem(KEY)).toBe(JSON.stringify(VALUE));
+  })
 
   test('Subscriptions', () => {
     const KEY = getRandomKey();

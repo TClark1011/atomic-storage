@@ -94,12 +94,15 @@ const createStorageAtom = <Value>({
     return unsubscribe;
   };
 
+  const reset: StorageAtom<Value>['reset'] = () => set(initialValue);
+
   return {
     get,
     set,
     key,
     addMiddleware,
     subscribe,
+    reset,
   };
 };
 
